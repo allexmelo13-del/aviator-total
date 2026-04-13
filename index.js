@@ -1,19 +1,15 @@
-import puppeteer from "puppeteer";
+const puppeteer = require("puppeteer");
 
-// ===== CONFIG =====
-const TOKEN = "8610194016:AAExK-Osx_hiRVARpDEBamNprXGCk4hvEAM";
-const CHAT_ID = "899268063";
+const TOKEN = process.env.TOKEN;
+const CHAT_ID = process.env.CHAT_ID;
 
 let ultimoAlerta = false;
 
-// ===== TELEGRAM =====
 async function enviarTelegram(msg) {
   try {
     await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
         chat_id: CHAT_ID,
         text: msg
@@ -24,22 +20,23 @@ async function enviarTelegram(msg) {
   }
 }
 
-// ===== BOT =====
-async function start() {
-  console.log("🚀 Iniciando bot...");
-
+(async () => {
   const browser = await puppeteer.launch({
-  headless: true,
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
-});
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage"
+    ]
+  });
 
   const page = await browser.newPage();
 
-  await page.goto("https://www.tipminer.com/br/historico/sortenabet/aviator", {
+  await page.goto("https://tipminer.com", {
     waitUntil: "domcontentloaded"
   });
 
-  console.log("🌐 Página carregada");
+  console.log("🚀 BOT RODANDO 24H");
 
   setInterval(async () => {
     try {
@@ -65,30 +62,26 @@ async function start() {
         return lista.slice(0, 10);
       });
 
-      if (!resultados || resultados.length < 2) return;
+      if (resultados.length < 2) return;
 
-      const ult1 = resultados[0];
-      const ult2 = resultados[1];
+      let ult1 = resultados[0];
+      let ult2 = resultados[1];
 
-      console.log("🎯 Últimos:", ult1, ult2);
+      console.log("🎯", ult1, ult2);
 
       if (ult1 >= 10 && ult2 >= 10) {
         if (!ultimoAlerta) {
-          console.log("🌸 SINAL DETECTADO");
+          console.log("🌸 SINAL!");
 
           await enviarTelegram("🌸 SINAL DETECTADO!\n2 velas ≥10x 🚀");
-
           ultimoAlerta = true;
         }
       } else {
         ultimoAlerta = false;
       }
 
-    } catch (e) {
-      console.log("Erro loop:", e);
+    } catch (err) {
+      console.log("Erro:", err);
     }
-
-  }, 5000);
-}
-
-start();
+  }, 3000);
+})();

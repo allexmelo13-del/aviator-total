@@ -1,8 +1,12 @@
 {
   "name": "aviator-bot",
   "version": "1.0.0",
-  "type": "module",
+  "main": "index.js",
+  "type": "commonjs",
   "dependencies": {
     "puppeteer": "^22.0.0"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
